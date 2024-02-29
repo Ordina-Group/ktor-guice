@@ -1,12 +1,14 @@
 package com.ordina
 
 import com.google.inject.Inject
+import com.google.inject.ProvidedBy
 import com.google.inject.Provider
+import com.ordina.config.ConfigLoader
+import com.ordina.config.ConfigProvider
 import com.typesafe.config.Config
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.util.reflect.*
-import kotlin.reflect.KClass
+import io.ktor.server.engine.ApplicationEngine
+import io.ktor.server.engine.ApplicationEngineFactory
+import io.ktor.server.engine.embeddedServer
 
 class ApplicationEngineProvider @Inject constructor(
     private val config: ApplicationConfiguration
@@ -29,15 +31,21 @@ class ApplicationEngineProvider @Inject constructor(
 
 }
 
+@ProvidedBy(ApplicationConfigProvider::class)
 data class ApplicationConfiguration(
     val engine: String,
     val host: String,
     val port: Int
-) {
-    @Inject
-    constructor(config: Config): this(
-        engine = config.getString("ktor.engine"),
-        host = config.getString("ktor.host"),
-        port = config.getInt("ktor.port")
-    )
-}
+)
+
+class ApplicationConfigProvider @Inject constructor(config: Config) :
+        ConfigProvider<ApplicationConfiguration>(ApplicationConfigLoader, config)
+
+object ApplicationConfigLoader :
+        ConfigLoader<ApplicationConfiguration>("ktor", {
+            ApplicationConfiguration(
+                engine = getString("engine"),
+                host = getString("host"),
+                port = getInt("port")
+            )
+        })

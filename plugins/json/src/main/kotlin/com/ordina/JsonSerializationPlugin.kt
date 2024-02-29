@@ -1,16 +1,23 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package com.ordina
 
-import com.ordina.ktor.plugins.Plugin
-import io.ktor.server.application.install
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import com.google.inject.Inject
+import com.google.inject.ProvidedBy
+import com.ordina.config.ConfigLoader
+import com.ordina.config.ConfigProvider
+import com.ordina.ktor.plugins.BaseRouteScopedPlugin
+import com.typesafe.config.Config
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.*
+import io.ktor.server.plugins.contentnegotiation.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
 
-@OptIn(ExperimentalSerializationApi::class)
-class JsonSerializationPlugin(config: JsonSerializationConfiguration) : Plugin({
-    install(ContentNegotiation) {
-        Json {
+class JsonSerializationPlugin @Inject constructor(config: JsonSerializationConfig) :
+    BaseRouteScopedPlugin<ContentNegotiationConfig, PluginInstance>(ContentNegotiation, {
+        json(Json {
             encodeDefaults = config.encodeDefaults
             ignoreUnknownKeys = config.ignoreUnknownKeys
             isLenient = config.isLenient
@@ -22,11 +29,11 @@ class JsonSerializationPlugin(config: JsonSerializationConfiguration) : Plugin({
             useArrayPolymorphism = config.useArrayPolymorphism
             classDiscriminator = config.classDiscriminator
             allowSpecialFloatingPointValues = config.allowSpecialFloatingPointValues
-        }
-    }
+        })
 })
 
-data class JsonSerializationConfiguration @OptIn(ExperimentalSerializationApi::class) constructor(
+@ProvidedBy(JsonSerializationConfigProvider::class)
+data class JsonSerializationConfig(
     val encodeDefaults: Boolean = false,
     val ignoreUnknownKeys: Boolean = false,
     val isLenient: Boolean = false,
@@ -41,3 +48,25 @@ data class JsonSerializationConfiguration @OptIn(ExperimentalSerializationApi::c
     val useAlternativeNames: Boolean = true,
     val namingStrategy: JsonNamingStrategy? = null,
 )
+
+class JsonSerializationConfigProvider @Inject constructor(config: Config) :
+    ConfigProvider<JsonSerializationConfig>(JsonSerializationConfigurationLoader, config)
+
+object JsonSerializationConfigurationLoader : ConfigLoader<JsonSerializationConfig>("ktor.json", {
+    JsonSerializationConfig(
+        encodeDefaults = getBoolean("encodeDefaults"),
+        ignoreUnknownKeys = getBoolean("ignoreUnknownKeys"),
+        isLenient = getBoolean("isLenient"),
+        allowStructuredMapKeys = getBoolean("allowStructuredMapKeys"),
+        prettyPrint = getBoolean("prettyPrint"),
+        explicitNulls = getBoolean("explicitNulls"),
+        prettyPrintIndent = getString("prettyPrintIndent"),
+        coerceInputValues = getBoolean("coerceInputValues"),
+        useArrayPolymorphism = getBoolean("useArrayPolymorphism"),
+        classDiscriminator = getString("classDiscriminator"),
+        allowSpecialFloatingPointValues = getBoolean("allowSpecialFloatingPointValues"),
+        useAlternativeNames = getBoolean("useAlternativeNames"),
+        namingStrategy = null
+    )
+})
+

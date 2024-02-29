@@ -1,15 +1,18 @@
-package com.ordina
+package com.ordina.example
 
 import com.ordina.ktor.routes.BaseController
 import com.typesafe.config.Config
 import io.ktor.server.application.call
+import io.ktor.server.request.*
 import io.ktor.server.response.respond
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.serialization.Serializable
 
 @Singleton
 class SimpleController @Inject constructor(private val config: Config) : BaseController {
     val getX = request {
+        call.receive<RequestInput>()
         call.respond("foo")
     }
 
@@ -17,3 +20,6 @@ class SimpleController @Inject constructor(private val config: Config) : BaseCon
         call.respond("bar")
     }
 }
+
+@Serializable
+data class RequestInput(val s: String, val i: Int)

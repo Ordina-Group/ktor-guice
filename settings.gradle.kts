@@ -4,6 +4,12 @@ plugins {
 rootProject.name = "ktor-guice"
 
 include("core")
+
 include("plugins:json")
+
+include("plugins:websocket")
+
+// Authentication Plugins
+include("plugins:authentication:jwt")
 
 include("examples:basic")

@@ -1,7 +1,7 @@
-package com.ordina.ktor.routes
+package com.ordina.kuice.ktor.routes
 
 import com.google.inject.Injector
-import com.ordina.Registry
+import com.ordina.kuice.Registry
 import io.ktor.http.HttpMethod
 import io.ktor.server.application.ApplicationCall
 
@@ -15,21 +15,21 @@ data class Route<T>(val method: HttpMethod, val path: String, val f: T.() -> Req
     }
 }
 
-class RouteScope {
+class RouteScope(val registry : Registry<Route<*>>) {
     inline fun <reified T> get(path: String, noinline f: T.() -> RequestHandler) =
-        RouteRegistry.register(Route(HttpMethod.Get, path, f, T::class.java))
+        registry.register(Route(HttpMethod.Get, path, f, T::class.java))
 
     inline fun <reified T> post(path: String, noinline f: T.() -> RequestHandler) =
-        RouteRegistry.register(Route(HttpMethod.Post, path, f, T::class.java))
+        registry.register(Route(HttpMethod.Post, path, f, T::class.java))
 
     inline fun <reified T> put(path: String, noinline f: T.() -> RequestHandler) =
-        RouteRegistry.register(Route(HttpMethod.Put, path, f, T::class.java))
+        registry.register(Route(HttpMethod.Put, path, f, T::class.java))
 
     inline fun <reified T> delete(path: String, noinline f: T.() -> RequestHandler) =
-        RouteRegistry.register(Route(HttpMethod.Delete, path, f, T::class.java))
+        registry.register(Route(HttpMethod.Delete, path, f, T::class.java))
 
     inline fun <reified T> patch(path: String, noinline f: T.() -> RequestHandler) =
-        RouteRegistry.register(Route(HttpMethod.Patch, path, f, T::class.java))
+        registry.register(Route(HttpMethod.Patch, path, f, T::class.java))
 }
 
 object RouteRegistry : Registry<Route<*>>()

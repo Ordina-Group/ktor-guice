@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm")
+    id("library-conventions")
+    `maven-publish`
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
-    `java-library`
 }
 
 repositories {
@@ -13,14 +13,13 @@ dependencies {
     implementation(kotlin("reflect"))
 
     // KTOR
-    implementation("io.ktor:ktor-server-core-jvm:2.3.7")
-    implementation("io.ktor:ktor-server-host-common-jvm:2.3.7")
-
-    implementation("io.ktor:ktor-server-netty-jvm:2.3.7")
+    api("io.ktor:ktor-server-core-jvm:2.3.7")
+    api("io.ktor:ktor-server-host-common-jvm:2.3.7")
+    api("io.ktor:ktor-server-netty-jvm:2.3.7")
 
     // Dependency Injection
-    implementation("com.google.inject:guice:7.0.0")
+    api("com.google.inject:guice:7.0.0")
 
     // Configuration
-    implementation("com.typesafe:config:1.4.3")
+    api("com.typesafe:config:1.4.3")
 }

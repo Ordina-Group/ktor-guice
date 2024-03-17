@@ -1,12 +1,9 @@
-package com.ordina.ktor.plugins
+package com.ordina.kuice.ktor.plugins
 
 import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.Plugin
 import io.ktor.server.application.install
-import io.ktor.util.pipeline.Pipeline
-
 
 abstract class BaseApplicationPlugin<TConfiguration : Any, TPlugin : Any>(
     private val plugin: Plugin<Application, TConfiguration, TPlugin>,

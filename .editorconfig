@@ -1,0 +1,7 @@
+
+[*.{kt,kts}]
+ij_kotlin_allow_trailing_comma_on_call_site = false
+ij_kotlin_allow_trailing_comma = false
+ktlint_function_signature_body_expression_wrapping = multiline
+ktlint_annotation-spacing = false
+ktlint_spacing-between-declarations-with-annotations = false

@@ -4,9 +4,9 @@ package com.ordina
 
 import com.google.inject.Inject
 import com.google.inject.ProvidedBy
-import com.ordina.config.ConfigLoader
-import com.ordina.config.ConfigProvider
-import com.ordina.ktor.plugins.BaseRouteScopedPlugin
+import com.ordina.kuice.config.ConfigLoader
+import com.ordina.kuice.config.ConfigProvider
+import com.ordina.kuice.ktor.plugins.BaseRouteScopedPlugin
 import com.typesafe.config.Config
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*

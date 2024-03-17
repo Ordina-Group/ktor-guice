@@ -1,12 +1,12 @@
-package com.ordina
+package com.ordina.kuice
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.google.inject.Inject
 import com.google.inject.ProvidedBy
-import com.ordina.config.ConfigLoader
-import com.ordina.config.ConfigProvider
-import com.ordina.ktor.plugins.BaseApplicationPlugin
+import com.ordina.kuice.config.ConfigLoader
+import com.ordina.kuice.config.ConfigProvider
+import com.ordina.kuice.ktor.plugins.BaseApplicationPlugin
 import com.typesafe.config.Config
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.AuthenticationConfig

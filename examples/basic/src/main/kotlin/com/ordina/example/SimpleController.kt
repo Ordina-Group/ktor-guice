@@ -1,6 +1,6 @@
 package com.ordina.example
 
-import com.ordina.ktor.routes.BaseController
+import com.ordina.kuice.ktor.routes.BaseController
 import com.typesafe.config.Config
 import io.ktor.server.application.call
 import io.ktor.server.request.*

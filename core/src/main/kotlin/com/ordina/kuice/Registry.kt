@@ -1,4 +1,4 @@
-package com.ordina
+package com.ordina.kuice
 
 abstract class Registry<Value> {
     private val register: MutableList<Value> = mutableListOf()

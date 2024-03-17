@@ -1,6 +1,6 @@
 package com.ordina.example
 
-import com.ordina.guiceApplication
+import com.ordina.kuice.guiceApplication
 
 fun main() {
     guiceApplication {

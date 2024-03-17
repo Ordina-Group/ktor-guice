@@ -1,4 +1,4 @@
-package com.ordina.guice
+package com.ordina.kuice.guice
 
 import com.google.inject.Injector
 

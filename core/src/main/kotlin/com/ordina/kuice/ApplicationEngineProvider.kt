@@ -1,10 +1,10 @@
-package com.ordina
+package com.ordina.kuice
 
 import com.google.inject.Inject
 import com.google.inject.ProvidedBy
 import com.google.inject.Provider
-import com.ordina.config.ConfigLoader
-import com.ordina.config.ConfigProvider
+import com.ordina.kuice.config.ConfigLoader
+import com.ordina.kuice.config.ConfigProvider
 import com.typesafe.config.Config
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.engine.ApplicationEngineFactory
@@ -28,7 +28,6 @@ class ApplicationEngineProvider @Inject constructor(
             throw Exception("Unable to resolve engine with qualified name $engineName")
         }
     }
-
 }
 
 @ProvidedBy(ApplicationConfigProvider::class)
@@ -39,13 +38,13 @@ data class ApplicationConfiguration(
 )
 
 class ApplicationConfigProvider @Inject constructor(config: Config) :
-        ConfigProvider<ApplicationConfiguration>(ApplicationConfigLoader, config)
+    ConfigProvider<ApplicationConfiguration>(ApplicationConfigLoader, config)
 
 object ApplicationConfigLoader :
-        ConfigLoader<ApplicationConfiguration>("ktor", {
-            ApplicationConfiguration(
-                engine = getString("engine"),
-                host = getString("host"),
-                port = getInt("port")
-            )
-        })
+    ConfigLoader<ApplicationConfiguration>("ktor", {
+        ApplicationConfiguration(
+            engine = getString("engine"),
+            host = getString("host"),
+            port = getInt("port")
+        )
+    })

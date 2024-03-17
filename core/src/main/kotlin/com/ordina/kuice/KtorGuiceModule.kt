@@ -1,4 +1,4 @@
-package com.ordina
+package com.ordina.kuice
 
 import com.google.inject.AbstractModule
 import com.google.inject.Provides

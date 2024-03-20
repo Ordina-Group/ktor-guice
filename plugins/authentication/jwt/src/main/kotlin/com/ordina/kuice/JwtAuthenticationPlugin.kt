@@ -4,14 +4,19 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.google.inject.Inject
 import com.google.inject.ProvidedBy
+import com.ordina.kuice.ktor.routes.BaseController
 import com.ordina.kuice.config.ConfigLoader
 import com.ordina.kuice.config.ConfigProvider
 import com.ordina.kuice.ktor.plugins.BaseApplicationPlugin
+import com.ordina.kuice.ktor.routes.RouteScope
 import com.typesafe.config.Config
+import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.AuthenticationConfig
+import io.ktor.server.auth.AuthenticationStrategy
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.routing.Route
 
 class JwtAuthenticationPlugin @Inject constructor(config: JwtAuthenticationConfig) :
     BaseApplicationPlugin<AuthenticationConfig, Authentication>(Authentication, {
@@ -50,3 +55,19 @@ object JwtAuthenticationConfigurationLoader :
             secret = getString("secret")
         )
 })
+
+fun RouteScope.authenticate(n: RouteScope.() -> Unit) : Route.() -> Unit = {
+    this.authenticate { n }
+}
+
+fun BaseController<*>.authenticatedRequest(
+    vararg configurations: String? = arrayOf<String?>(null),
+    strategy: AuthenticationStrategy = AuthenticationStrategy.FirstSuccessful,
+    build: Route.() -> Unit
+) : Route.() -> Unit = {
+    authenticate(
+        configurations = configurations,
+        strategy = strategy,
+        build = build
+    )
+}

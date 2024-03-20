@@ -1,12 +1,15 @@
 package com.ordina.kuice
 
 import com.google.inject.Inject
+import com.google.inject.Injector
 import com.google.inject.ProvidedBy
 import com.ordina.kuice.config.ConfigLoader
 import com.ordina.kuice.config.ConfigProvider
 import com.ordina.kuice.config.getOptionalClass
 import com.ordina.kuice.config.getOptionalLong
 import com.ordina.kuice.ktor.plugins.BaseApplicationPlugin
+import com.ordina.kuice.ktor.routes.BaseController
+import com.ordina.kuice.ktor.routes.Route
 import com.ordina.kuice.ktor.routes.RouteScope
 import com.typesafe.config.Config
 import io.ktor.serialization.WebsocketContentConverter
@@ -15,9 +18,12 @@ import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.WebSockets.WebSocketOptions
 import io.ktor.server.websocket.pingPeriod
 import io.ktor.server.websocket.timeout
+import io.ktor.server.websocket.webSocket
 import java.time.Duration
 
-class WebSocketPlugin @Inject constructor(config: WebSocketConfiguration) : BaseApplicationPlugin<WebSocketOptions, WebSockets>(WebSockets, {
+typealias WebSocketRequestHandler = suspend DefaultWebSocketServerSession.() -> Unit
+
+class WebSocketPlugin @Inject constructor(private val injector: Injector, config: WebSocketConfiguration) : BaseApplicationPlugin<WebSocketOptions, WebSockets>(WebSockets, {
     pingPeriod = config.pingPeriodMillis
     timeout = config.timeout
     maxFrameSize = config.maxFrameSize
@@ -33,7 +39,6 @@ data class WebSocketConfiguration(
     val contentConverter: WebsocketContentConverter?
 )
 
-
 class WebSocketConfigProvider @Inject constructor(config: Config) :
     ConfigProvider<WebSocketConfiguration>(WebSocketConfigLoader, config)
 
@@ -48,14 +53,13 @@ object WebSocketConfigLoader :
         )
     })
 
-fun RouteScope.webSocket(
+inline fun <reified T> RouteScope.webSocket(
     path: String,
     protocol: String? = null,
-    handler: suspend DefaultWebSocketServerSession.() -> Unit) {
-//    registry.register(Route(HttpMethod.Get, path, handler))
-}
-interface WebSocketController {
-    fun request(f: suspend DefaultWebSocketServerSession.() -> Unit): suspend DefaultWebSocketServerSession.() -> Unit = f
+    noinline getRequestHandler: T.() -> WebSocketRequestHandler) {
+    registry.register(
+        Route(getRequestHandler, { handler -> { this.webSocket(path, protocol, handler) } }, T::class.java)
+    )
 }
 
-
+interface BaseWebSocketController : BaseController<WebSocketRequestHandler>

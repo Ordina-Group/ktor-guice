@@ -19,3 +19,5 @@ project(":plugins:authentication:jwt").name = "authentication-jwt"
 
 // Examples
 include("examples:basic")
+include("examples:authentication")
+include("examples:websocket")

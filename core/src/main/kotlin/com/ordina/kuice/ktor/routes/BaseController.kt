@@ -1,5 +1,7 @@
 package com.ordina.kuice.ktor.routes
 
-interface BaseController {
-    fun request(f: RequestHandler): RequestHandler = f
+interface BaseController<Handler> {
+    fun request(handler: Handler): Handler = handler
 }
+
+interface ApplicationController : BaseController<RequestHandler>

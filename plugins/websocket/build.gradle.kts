@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
     implementation(project(":core"))
-    implementation("io.ktor:ktor-server-websockets-jvm:2.3.7")
+    api("io.ktor:ktor-server-websockets-jvm:2.3.7")
     implementation("com.google.inject:guice:7.0.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }

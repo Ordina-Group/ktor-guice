@@ -3,5 +3,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":plugins:websocket"))
+//    implementation(project(":plugins:websocket-core"))
+//    implementation(project(":plugins:websocket-json"))
 }

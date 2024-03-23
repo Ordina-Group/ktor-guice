@@ -1,36 +1,25 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 
-package com.ordina
+package com.ordina.kuice
 
+import com.google.inject.AbstractModule
 import com.google.inject.Inject
 import com.google.inject.ProvidedBy
+import com.google.inject.Provider
 import com.ordina.kuice.config.ConfigLoader
 import com.ordina.kuice.config.ConfigProvider
 import com.ordina.kuice.ktor.plugins.BaseRouteScopedPlugin
 import com.typesafe.config.Config
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.*
+import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.plugins.contentnegotiation.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
 
-class JsonSerializationPlugin @Inject constructor(config: JsonSerializationConfig) :
-    BaseRouteScopedPlugin<ContentNegotiationConfig, PluginInstance>(ContentNegotiation, {
-        json(Json {
-            encodeDefaults = config.encodeDefaults
-            ignoreUnknownKeys = config.ignoreUnknownKeys
-            isLenient = config.isLenient
-            allowStructuredMapKeys = config.allowStructuredMapKeys
-            prettyPrint = config.prettyPrint
-            explicitNulls = config.explicitNulls
-            prettyPrintIndent = config.prettyPrintIndent
-            coerceInputValues = config.coerceInputValues
-            useArrayPolymorphism = config.useArrayPolymorphism
-            classDiscriminator = config.classDiscriminator
-            allowSpecialFloatingPointValues = config.allowSpecialFloatingPointValues
-        })
-})
+class JsonSerializationPlugin @Inject constructor(format: Json) :
+    BaseRouteScopedPlugin<ContentNegotiationConfig, PluginInstance>(ContentNegotiation, { json(format) })
 
 @ProvidedBy(JsonSerializationConfigProvider::class)
 data class JsonSerializationConfig(
@@ -70,3 +59,24 @@ object JsonSerializationConfigurationLoader : ConfigLoader<JsonSerializationConf
     )
 })
 
+class JsonProvider @Inject constructor(private val config: JsonSerializationConfig) : Provider<Json> {
+    override fun get(): Json = Json {
+        encodeDefaults = config.encodeDefaults
+        ignoreUnknownKeys = config.ignoreUnknownKeys
+        isLenient = config.isLenient
+        allowStructuredMapKeys = config.allowStructuredMapKeys
+        prettyPrint = config.prettyPrint
+        explicitNulls = config.explicitNulls
+        prettyPrintIndent = config.prettyPrintIndent
+        coerceInputValues = config.coerceInputValues
+        useArrayPolymorphism = config.useArrayPolymorphism
+        classDiscriminator = config.classDiscriminator
+        allowSpecialFloatingPointValues = config.allowSpecialFloatingPointValues
+    }
+}
+
+object JsonSerializationModule : AbstractModule() {
+    override fun configure() {
+        bind(Json::class.java).toProvider(JsonProvider::class.java).asEagerSingleton()
+    }
+}

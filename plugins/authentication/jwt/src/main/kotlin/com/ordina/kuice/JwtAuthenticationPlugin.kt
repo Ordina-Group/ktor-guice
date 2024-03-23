@@ -4,19 +4,20 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.google.inject.Inject
 import com.google.inject.ProvidedBy
-import com.ordina.kuice.ktor.routes.BaseController
 import com.ordina.kuice.config.ConfigLoader
 import com.ordina.kuice.config.ConfigProvider
 import com.ordina.kuice.ktor.plugins.BaseApplicationPlugin
+import com.ordina.kuice.ktor.routes.ParentRoute
+import com.ordina.kuice.ktor.routes.Route
 import com.ordina.kuice.ktor.routes.RouteScope
 import com.typesafe.config.Config
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.AuthenticationConfig
-import io.ktor.server.auth.AuthenticationStrategy
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.routing.Route
+import org.slf4j.LoggerFactory
+import io.ktor.server.routing.Route as KRoute
 
 class JwtAuthenticationPlugin @Inject constructor(config: JwtAuthenticationConfig) :
     BaseApplicationPlugin<AuthenticationConfig, Authentication>(Authentication, {
@@ -56,18 +57,27 @@ object JwtAuthenticationConfigurationLoader :
         )
 })
 
-fun RouteScope.authenticate(n: RouteScope.() -> Unit) : Route.() -> Unit = {
-    this.authenticate { n }
+fun RouteScope.authenticate(
+    vararg configurations: String? = arrayOf(null),
+    optional: Boolean = false,
+    f: RouteScope.() -> Unit
+) {
+    val authenticatedRegistry = object : Registry<Route>() { }
+    val childScope = RouteScope(authenticatedRegistry)
+
+    f(childScope)
+
+    fun getParentRoute(route: KRoute, build: KRoute.() -> Unit): KRoute =
+        route.authenticate(
+            configurations = configurations,
+            optional = optional,
+            build = build
+        )
+
+    registry.register(
+        ParentRoute(::getParentRoute, authenticatedRegistry.values())
+    )
+
 }
 
-fun BaseController<*>.authenticatedRequest(
-    vararg configurations: String? = arrayOf<String?>(null),
-    strategy: AuthenticationStrategy = AuthenticationStrategy.FirstSuccessful,
-    build: Route.() -> Unit
-) : Route.() -> Unit = {
-    authenticate(
-        configurations = configurations,
-        strategy = strategy,
-        build = build
-    )
-}
+private val logger = LoggerFactory.getLogger("com.ordina.kuice.authentication.jwt")

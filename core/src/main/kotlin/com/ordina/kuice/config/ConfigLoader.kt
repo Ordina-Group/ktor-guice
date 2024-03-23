@@ -1,7 +1,9 @@
 package com.ordina.kuice.config
 
+import com.ordina.kuice.applicationLogger
 import com.typesafe.config.Config
 import jakarta.inject.Provider
+import org.slf4j.LoggerFactory
 
 abstract class ConfigLoader<T>(private val prefix: String, val f: Config.() -> T) {
     fun load(config: Config) : T = f(config.getConfig(prefix))
@@ -33,3 +35,4 @@ fun <T> Config.getOptional(path: String, getValue: (String) -> T): T? {
 fun Config.getOptionalLong(path: String): Long? = getOptional(path, ::getLong)
 
 inline fun <reified T> Config.getOptionalClass(path: String): T? = getOptional(path, ::getClass)
+

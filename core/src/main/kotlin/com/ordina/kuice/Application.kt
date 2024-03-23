@@ -4,36 +4,41 @@ import com.google.inject.Guice
 import com.google.inject.Injector
 import com.google.inject.Module
 import com.ordina.kuice.guice.getInstance
-import com.ordina.kuice.ktor.plugins.BaseApplicationPlugin
 import com.ordina.kuice.ktor.plugins.BaseApplicationPluginWithRoutes
 import com.ordina.kuice.ktor.plugins.BasePlugin
-import com.ordina.kuice.ktor.plugins.BaseRouteScopedPlugin
-import com.ordina.kuice.ktor.routes.RouteRegistry
+import com.ordina.kuice.ktor.routes.Route
 import com.ordina.kuice.ktor.routes.RouteScope
 import com.typesafe.config.Config
-import io.ktor.server.application.Application
+import com.typesafe.config.ConfigFactory
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.config.configLoaders
 import io.ktor.server.engine.ApplicationEngine
-import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.util.pipeline.Pipeline
 import org.slf4j.LoggerFactory
 
 internal val applicationLogger = LoggerFactory.getLogger("com.ordina.kuice.Application")
 
-class GuiceApplicationScope {
-    fun routes(f: RouteScope.() -> Unit) = f.invoke(RouteScope(RouteRegistry))
+class GuiceApplicationScope(private val routeRegistry: Registry<Route>) {
+    fun routes(f: RouteScope.() -> Unit) = f.invoke(RouteScope(routeRegistry))
 }
 
 fun guiceApplication(
-    modules: List<Module>,
     f: GuiceApplicationScope.() -> Unit
 ) {
-    val injector = Guice.createInjector(listOf(KtorGuiceModule) + modules)
+    val config = ConfigFactory.load()
+
+    val pluginModules = getModules(config, "ktor.pluginModules")
+
+    applicationLogger.warn("Loading ${pluginModules.size} plugin modules")
+
+    val modules = getModules(config, "ktor.modules")
+
+    val injector = Guice.createInjector(listOf(KtorGuiceModule(config)) + pluginModules + modules)
     val engine = injector.getInstance<ApplicationEngine>()
-    val config = injector.getInstance<Config>()
 
     val plugins = getPlugins(injector, config)
+    val routeRegistry = object : Registry<Route>() {}
 
     engine.application.apply {
         plugins.forEach { plugin ->
@@ -42,11 +47,14 @@ fun guiceApplication(
         }
     }
 
-    f(GuiceApplicationScope())
+    f(GuiceApplicationScope(routeRegistry))
 
     engine.application.apply {
         routing {
-            RouteRegistry.values().forEach { r ->
+            applicationLogger.warn("Registering ${routeRegistry.values().size} routes")
+            routeRegistry.values().forEach { r ->
+                applicationLogger.warn("Registering route $r")
+
                 r.getRoute(injector).invoke(this)
             }
 
@@ -61,11 +69,22 @@ fun guiceApplication(
     engine.start(wait = true)
 }
 
-fun guiceApplication(f: GuiceApplicationScope.() -> Unit) = guiceApplication(emptyList(), f)
-
 private fun getPlugins(injector: Injector, config: Config): List<BasePlugin<Pipeline<*, ApplicationCall>, *, *>> =
     config
         .getStringList("ktor.plugins")
         .map { Class.forName(it) }
         .map { injector.getInstance(it) }
         .filterIsInstance<BasePlugin<Pipeline<*, ApplicationCall>, *, *>>()
+
+private fun getModules(config: Config, path: String): List<Module> {
+    val a = config.getStringList(path)
+
+    applicationLogger.warn("Found ${a.size} entries for $path")
+
+    val b = a.map { Class.forName(it).kotlin.objectInstance }
+
+    b.forEach { applicationLogger.warn("Found class $it") }
+
+    return b .filterIsInstance<Module>()
+
+}

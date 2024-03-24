@@ -21,7 +21,7 @@ interface Route {
 class BaseRoute<Controller, RequestHandler>(
     private val getRequestHandler: Controller.() -> RequestHandler,
     private val getRouteFromHandler: (RequestHandler) -> KRoute.() -> Unit,
-    private val clazz: Class<Controller>
+    private val clazz: Class<Controller>,
 ) : Route {
     override fun getRoute(injector: Injector): KRoute.() -> Unit {
         val controller = injector.getInstance(clazz)
@@ -33,7 +33,7 @@ class BaseRoute<Controller, RequestHandler>(
 
 class ParentRoute(
     private val parentRoute: (KRoute, KRoute.() -> Unit) -> Unit,
-    private val childrenRoutes: List<Route>
+    private val childrenRoutes: List<Route>,
 ) : Route {
 
     override fun getRoute(injector: Injector): KRoute.() -> Unit = {
@@ -45,31 +45,31 @@ class ParentRoute(
 
 private val logger = LoggerFactory.getLogger("com.ordina.kuice.Routing")
 
-class RouteScope(val registry : Registry<Route>) {
+class RouteScope(val registry: Registry<Route>) {
 
     inline fun <reified T> get(path: String, noinline getRequestHandler: T.() -> RequestHandler) =
         registry.register(
-            BaseRoute(getRequestHandler, { handler -> { this.get(path, handler) } }, T::class.java)
+            BaseRoute(getRequestHandler, { handler -> { this.get(path, handler) } }, T::class.java),
         )
 
     inline fun <reified T> post(path: String, noinline getRequestHandler: T.() -> RequestHandler) =
         registry.register(
-            BaseRoute(getRequestHandler, { handler -> { this.post(path, handler) } }, T::class.java)
+            BaseRoute(getRequestHandler, { handler -> { this.post(path, handler) } }, T::class.java),
         )
 
     inline fun <reified T> put(path: String, noinline getRequestHandler: T.() -> RequestHandler) =
         registry.register(
-            BaseRoute(getRequestHandler, { handler -> { this.put(path, handler) } }, T::class.java)
+            BaseRoute(getRequestHandler, { handler -> { this.put(path, handler) } }, T::class.java),
         )
 
     inline fun <reified T> delete(path: String, noinline getRequestHandler: T.() -> RequestHandler) =
         registry.register(
-            BaseRoute(getRequestHandler, { handler -> { this.delete(path, handler) } }, T::class.java)
+            BaseRoute(getRequestHandler, { handler -> { this.delete(path, handler) } }, T::class.java),
         )
 
     inline fun <reified T> patch(path: String, noinline getRequestHandler: T.() -> RequestHandler) =
         registry.register(
-            BaseRoute(getRequestHandler, { handler -> { this.patch(path, handler) } }, T::class.java)
+            BaseRoute(getRequestHandler, { handler -> { this.patch(path, handler) } }, T::class.java),
         )
 
     fun route(path: String, f: RouteScope.() -> Unit) {
@@ -82,9 +82,7 @@ class RouteScope(val registry : Registry<Route>) {
             route.route(path, build)
 
         registry.register(
-            ParentRoute(::getParentRoute, childRegistry.values())
+            ParentRoute(::getParentRoute, childRegistry.values()),
         )
     }
-
-
 }

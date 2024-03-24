@@ -5,6 +5,7 @@ plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 kotlin {

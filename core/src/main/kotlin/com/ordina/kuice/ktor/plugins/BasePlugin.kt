@@ -8,12 +8,12 @@ import io.ktor.server.application.install
 import io.ktor.server.routing.Routing
 import io.ktor.util.pipeline.Pipeline
 
-interface BasePlugin<TPipeline: Pipeline<*, ApplicationCall>, TConfiguration : Any, TPlugin : Any> {
+interface BasePlugin<TPipeline : Pipeline<*, ApplicationCall>, TConfiguration : Any, TPlugin : Any> {
     fun install(pipeline: TPipeline)
 }
 abstract class BaseApplicationPlugin<TConfiguration : Any, TPlugin : Any>(
     private val plugin: Plugin<Application, TConfiguration, TPlugin>,
-    private val configure: TConfiguration.() -> Unit
+    private val configure: TConfiguration.() -> Unit,
 ) : BasePlugin<Application, TConfiguration, TPlugin> {
     override fun install(pipeline: Application) {
         pipeline.install(plugin, configure)
@@ -22,7 +22,7 @@ abstract class BaseApplicationPlugin<TConfiguration : Any, TPlugin : Any>(
 
 abstract class BaseApplicationPluginWithRoutes<TConfiguration : Any, TPlugin : Any>(
     private val plugin: Plugin<Application, TConfiguration, TPlugin>,
-    private val configure: TConfiguration.() -> Unit
+    private val configure: TConfiguration.() -> Unit,
 ) : BasePlugin<Application, TConfiguration, TPlugin> {
     override fun install(pipeline: Application) {
         pipeline.install(plugin, configure)
@@ -33,7 +33,7 @@ abstract class BaseApplicationPluginWithRoutes<TConfiguration : Any, TPlugin : A
 
 abstract class BaseRouteScopedPlugin<TConfiguration : Any, TPlugin : Any>(
     private val plugin: Plugin<ApplicationCallPipeline, TConfiguration, TPlugin>,
-    private val configure: TConfiguration.() -> Unit
+    private val configure: TConfiguration.() -> Unit,
 ) : BasePlugin<ApplicationCallPipeline, TConfiguration, TPlugin> {
     override fun install(pipeline: ApplicationCallPipeline) {
         pipeline.install(plugin, configure)

@@ -11,9 +11,9 @@ import com.ordina.kuice.config.ConfigProvider
 import com.ordina.kuice.ktor.plugins.BaseRouteScopedPlugin
 import com.typesafe.config.Config
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.*
-import io.ktor.server.engine.ApplicationEngine
-import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.application.PluginInstance
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiationConfig
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNamingStrategy
@@ -55,7 +55,7 @@ object JsonSerializationConfigurationLoader : ConfigLoader<JsonSerializationConf
         classDiscriminator = getString("classDiscriminator"),
         allowSpecialFloatingPointValues = getBoolean("allowSpecialFloatingPointValues"),
         useAlternativeNames = getBoolean("useAlternativeNames"),
-        namingStrategy = null
+        namingStrategy = null,
     )
 })
 

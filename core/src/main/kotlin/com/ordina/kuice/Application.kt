@@ -24,14 +24,11 @@ class ApplicationScope(private val routeRegistry: Registry<Route>) {
 }
 
 fun application(
-    f: ApplicationScope.() -> Unit
+    f: ApplicationScope.() -> Unit,
 ) {
     val config = ConfigFactory.load()
 
     val pluginModules = getModules(config, "ktor.pluginModules")
-
-    applicationLogger.warn("Loading ${pluginModules.size} plugin modules")
-
     val modules = getModules(config, "ktor.modules")
 
     val injector = Guice.createInjector(listOf(KtorGuiceModule(config)) + pluginModules + modules)
@@ -51,18 +48,11 @@ fun application(
 
     engine.application.apply {
         routing {
-            applicationLogger.warn("Registering ${routeRegistry.values().size} routes")
-            routeRegistry.values().forEach { r ->
-                applicationLogger.warn("Registering route $r")
-
-                r.getRoute(injector).invoke(this)
-            }
+            routeRegistry.values().forEach { it.getRoute(injector).invoke(this) }
 
             plugins
                 .filterIsInstance<BaseApplicationPluginWithRoutes<*, *>>()
-                .forEach { plugin ->
-                    plugin.setupRoutes(this)
-                }
+                .forEach { it.setupRoutes(this) }
         }
     }
 

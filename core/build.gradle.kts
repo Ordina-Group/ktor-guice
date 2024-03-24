@@ -1,7 +1,5 @@
 plugins {
     id("library-conventions")
-    `maven-publish`
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
 }
 
 repositories {

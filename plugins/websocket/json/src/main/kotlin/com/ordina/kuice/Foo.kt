@@ -8,7 +8,7 @@ import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import kotlinx.serialization.json.Json
 
 class JsonWebSocketContentConverterProvider @Inject constructor(
-    private val format: Json
+    private val format: Json,
 ) : Provider<WebsocketContentConverter> {
     override fun get(): WebsocketContentConverter = KotlinxWebsocketSerializationConverter(format)
 }
@@ -18,5 +18,4 @@ object WebSocketModule : AbstractModule() {
         bind(WebsocketContentConverter::class.java)
             .toProvider(JsonWebSocketContentConverterProvider::class.java).asEagerSingleton()
     }
-
 }

@@ -11,7 +11,7 @@ import io.ktor.server.engine.ApplicationEngineFactory
 import io.ktor.server.engine.embeddedServer
 
 class ApplicationEngineProvider @Inject constructor(
-    private val config: ApplicationConfiguration
+    private val config: ApplicationConfiguration,
 ) : Provider<ApplicationEngine> {
     override fun get(): ApplicationEngine {
         val engineFactory = getEngineFactory(config.engine)
@@ -34,7 +34,7 @@ class ApplicationEngineProvider @Inject constructor(
 data class ApplicationConfiguration(
     val engine: String,
     val host: String,
-    val port: Int
+    val port: Int,
 )
 
 class ApplicationConfigProvider @Inject constructor(config: Config) :
@@ -45,6 +45,6 @@ object ApplicationConfigLoader :
         ApplicationConfiguration(
             engine = getString("engine"),
             host = getString("host"),
-            port = getInt("port")
+            port = getInt("port"),
         )
     })

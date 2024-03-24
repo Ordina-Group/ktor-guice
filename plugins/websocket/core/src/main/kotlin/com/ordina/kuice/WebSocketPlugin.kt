@@ -1,11 +1,9 @@
 package com.ordina.kuice
 
 import com.google.inject.Inject
-import com.google.inject.Injector
 import com.google.inject.ProvidedBy
 import com.ordina.kuice.config.ConfigLoader
 import com.ordina.kuice.config.ConfigProvider
-import com.ordina.kuice.config.getOptionalClass
 import com.ordina.kuice.config.getOptionalLong
 import com.ordina.kuice.ktor.plugins.BaseApplicationPlugin
 import com.ordina.kuice.ktor.routes.BaseController
@@ -13,7 +11,6 @@ import com.ordina.kuice.ktor.routes.BaseRoute
 import com.ordina.kuice.ktor.routes.RouteScope
 import com.typesafe.config.Config
 import io.ktor.serialization.WebsocketContentConverter
-import io.ktor.server.engine.ApplicationEngineFactory
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.WebSockets.WebSocketOptions
@@ -26,20 +23,23 @@ typealias WebSocketRequestHandler = suspend DefaultWebSocketServerSession.() -> 
 
 class WebSocketPlugin @Inject constructor(
     config: WebSocketConfiguration,
-    converter: WebsocketContentConverter?
-) : BaseApplicationPlugin<WebSocketOptions, WebSockets>(WebSockets, {
-    pingPeriod = config.pingPeriodMillis
-    timeout = config.timeout
-    maxFrameSize = config.maxFrameSize
-    contentConverter = converter
-})
+    converter: WebsocketContentConverter?,
+) : BaseApplicationPlugin<WebSocketOptions, WebSockets>(
+    WebSockets,
+    {
+        pingPeriod = config.pingPeriodMillis
+        timeout = config.timeout
+        maxFrameSize = config.maxFrameSize
+        contentConverter = converter
+    },
+)
 
 @ProvidedBy(WebSocketConfigProvider::class)
 data class WebSocketConfiguration(
     val pingPeriodMillis: Duration,
     val timeout: Duration,
     val maxFrameSize: Long,
-    val masking: Boolean
+    val masking: Boolean,
 )
 
 class WebSocketConfigProvider @Inject constructor(config: Config) :
@@ -58,9 +58,10 @@ object WebSocketConfigLoader :
 inline fun <reified T> RouteScope.webSocket(
     path: String,
     protocol: String? = null,
-    noinline getRequestHandler: T.() -> WebSocketRequestHandler) {
+    noinline getRequestHandler: T.() -> WebSocketRequestHandler,
+) {
     registry.register(
-        BaseRoute(getRequestHandler, { handler -> { this.webSocket(path, protocol, handler) } }, T::class.java)
+        BaseRoute(getRequestHandler, { handler -> { this.webSocket(path, protocol, handler) } }, T::class.java),
     )
 }
 

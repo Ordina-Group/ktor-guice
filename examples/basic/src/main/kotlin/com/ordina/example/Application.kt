@@ -1,9 +1,9 @@
 package com.ordina.example
 
-import com.ordina.kuice.guiceApplication
+import com.ordina.kuice.application
 
 fun main() {
-    guiceApplication {
+    application {
         routes {
             post<SimpleController>("/foo") { getX }
             get<SimpleController>("/bar") { getY }

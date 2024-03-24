@@ -3,6 +3,7 @@ package com.ordina.kuice
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.google.inject.Module
+import com.ordina.kuice.config.getOptional
 import com.ordina.kuice.guice.getInstance
 import com.ordina.kuice.ktor.plugins.BaseApplicationPluginWithRoutes
 import com.ordina.kuice.ktor.plugins.BasePlugin
@@ -11,7 +12,6 @@ import com.ordina.kuice.ktor.routes.RouteScope
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.config.configLoaders
 import io.ktor.server.engine.ApplicationEngine
 import io.ktor.server.routing.routing
 import io.ktor.util.pipeline.Pipeline
@@ -19,12 +19,12 @@ import org.slf4j.LoggerFactory
 
 internal val applicationLogger = LoggerFactory.getLogger("com.ordina.kuice.Application")
 
-class GuiceApplicationScope(private val routeRegistry: Registry<Route>) {
+class ApplicationScope(private val routeRegistry: Registry<Route>) {
     fun routes(f: RouteScope.() -> Unit) = f.invoke(RouteScope(routeRegistry))
 }
 
-fun guiceApplication(
-    f: GuiceApplicationScope.() -> Unit
+fun application(
+    f: ApplicationScope.() -> Unit
 ) {
     val config = ConfigFactory.load()
 
@@ -47,7 +47,7 @@ fun guiceApplication(
         }
     }
 
-    f(GuiceApplicationScope(routeRegistry))
+    f(ApplicationScope(routeRegistry))
 
     engine.application.apply {
         routing {
@@ -70,21 +70,12 @@ fun guiceApplication(
 }
 
 private fun getPlugins(injector: Injector, config: Config): List<BasePlugin<Pipeline<*, ApplicationCall>, *, *>> =
-    config
-        .getStringList("ktor.plugins")
+    (config.getOptional("ktor.plugins", config::getStringList) ?: emptyList())
         .map { Class.forName(it) }
         .map { injector.getInstance(it) }
         .filterIsInstance<BasePlugin<Pipeline<*, ApplicationCall>, *, *>>()
 
-private fun getModules(config: Config, path: String): List<Module> {
-    val a = config.getStringList(path)
-
-    applicationLogger.warn("Found ${a.size} entries for $path")
-
-    val b = a.map { Class.forName(it).kotlin.objectInstance }
-
-    b.forEach { applicationLogger.warn("Found class $it") }
-
-    return b .filterIsInstance<Module>()
-
-}
+private fun getModules(config: Config, path: String): List<Module> =
+    (config.getOptional(path, config::getStringList) ?: emptyList())
+        .map { Class.forName(it).kotlin.objectInstance }
+        .filterIsInstance<Module>()

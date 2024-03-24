@@ -8,6 +8,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
+import io.ktor.server.routing.route
 import org.slf4j.LoggerFactory
 import io.ktor.server.routing.Route as KRoute
 
@@ -70,4 +71,20 @@ class RouteScope(val registry : Registry<Route>) {
         registry.register(
             BaseRoute(getRequestHandler, { handler -> { this.patch(path, handler) } }, T::class.java)
         )
+
+    fun route(path: String, f: RouteScope.() -> Unit) {
+        val childRegistry = object : Registry<Route>() { }
+        val childScope = RouteScope(childRegistry)
+
+        f(childScope)
+
+        fun getParentRoute(route: KRoute, build: KRoute.() -> Unit): KRoute =
+            route.route(path, build)
+
+        registry.register(
+            ParentRoute(::getParentRoute, childRegistry.values())
+        )
+    }
+
+
 }

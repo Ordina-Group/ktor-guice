@@ -9,8 +9,8 @@ import jakarta.inject.Singleton
 
 @Singleton
 class SimpleController @Inject constructor(private val config: Config) : ApplicationController {
-    val getFoo = request {
-        call.respond("foo")
+    val getGreeting = request {
+        call.respond("Hello world!")
     }
 }
 

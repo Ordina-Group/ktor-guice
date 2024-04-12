@@ -1,7 +1,6 @@
 package com.ordina.example
 
 import com.ordina.kuice.ktor.routes.ApplicationController
-import com.ordina.kuice.ktor.routes.BaseController
 import com.typesafe.config.Config
 import io.ktor.server.application.call
 import io.ktor.server.request.*
@@ -12,15 +11,16 @@ import kotlinx.serialization.Serializable
 
 @Singleton
 class SimpleController @Inject constructor(private val config: Config) : ApplicationController {
-    val getX = request {
-        call.receive<RequestInput>()
-        call.respond("foo")
+    val getGreeting = request {
+        call.respond("Hello world!")
+
     }
 
-    val getY = request {
-        call.respond("bar")
+    val getGreetingWithName = request {
+        val input = call.receive<RequestInput>()
+        call.respond("Hello ${input.name}")
     }
 }
 
 @Serializable
-data class RequestInput(val s: String, val i: Int)
+data class RequestInput(val name: String)

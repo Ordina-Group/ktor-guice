@@ -6,7 +6,7 @@ fun main() {
     application {
         routes {
             route("nested-route") {
-                get<SimpleController>("/foo") { getFoo }
+                get<SimpleController>("/greeting") { getGreeting }
             }
         }
     }
